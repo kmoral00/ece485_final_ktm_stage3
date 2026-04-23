@@ -179,6 +179,8 @@ architecture Behavioral of riscv_pipeline is
             -- <add other IF registers?>
             rd : in STD_LOGIC_VECTOR ( 4 downto 0);
             alu_op : in STD_LOGIC_VECTOR (3 downto 0);
+            reg1_data : in STD_LOGIC_VECTOR(31 downto 0);
+            reg2_data : in STD_LOGIC_VECTOR (31 downto 0);
             
             -- IF/ID pipeline registers
             if_id_reg_write : inout STD_LOGIC;
@@ -190,8 +192,8 @@ architecture Behavioral of riscv_pipeline is
             if_id_load_addr : inout STD_LOGIC;
             if_id_instr : inout  STD_LOGIC_VECTOR(31 downto 0);
             
-            if_id_reg1_data  : in  STD_LOGIC_VECTOR(31 downto 0);
-            if_id_reg2_data  : in  STD_LOGIC_VECTOR(31 downto 0);
+            if_id_reg1_data  : inout  STD_LOGIC_VECTOR(31 downto 0);
+            if_id_reg2_data  : inout  STD_LOGIC_VECTOR(31 downto 0);
             if_id_imm        : inout  STD_LOGIC_VECTOR(31 downto 0);
             
             if_id_alu_op : inout STD_LOGIC_VECTOR(3 downto 0);
@@ -329,6 +331,9 @@ begin
             npc => if_id_npc,
             rd => instr(11 downto 7), --5 bits
             alu_op => if_id_alu_op,
+            reg1_data => reg1_data,
+            reg2_data => reg2_data,
+            
             -- <add other IF registers?>
             
             -- IF/ID pipeline registers
@@ -488,8 +493,8 @@ begin
             rs2       => if_id_instr(24 downto 20),
             rd        => if_id_rd,
             data_in   => wb_data,
-            data_out1 => if_id_reg1_data,
-            data_out2 => if_id_reg2_data
+            data_out1 => reg1_data, --changed from if_id_reg1_data
+            data_out2 => reg2_data  --changed from if_id_reg2_data
         );    
 
        
@@ -557,6 +562,7 @@ begin
     -- MUX to write back to register file
     wb_data <= mem_wb_mem_data when (mem_wb_reg_write = '1' and mem_wb_mem_read = '1') else 
                x"10000000" when (mem_wb_reg_write = '1' and mem_wb_load_addr = '1') else  -- hack for custom load_addr instruction
-               mem_wb_alu_result when (mem_wb_reg_write = '1');      
+               mem_wb_alu_result when (mem_wb_reg_write = '1') else
+               (others => '0');      
    
 end Behavioral;
