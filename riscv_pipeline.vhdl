@@ -479,7 +479,7 @@ begin
     end process;
 
     -- Stall signal
-    stall <= '1' when (start_stall = '1' or stall_counter > 0) else '0';        --inserted start_stall = '1'
+    --stall <= '1' when stall_counter > 0 else '0';       
 
 --------------------------------------------------------------------------------
     -- ID units
@@ -550,9 +550,9 @@ begin
     -- Comparator 
     not_equal_flag <= '1' when (ex_mem_reg1_data /= ex_mem_reg2_data) else '0';
             
-    next_pc <=  std_logic_vector(signed(ex_mem_npc)+shift_left(signed(ex_mem_imm),1)) when (ex_mem_branch = '1' and not_equal_flag = '1') else -- branch case
+    next_pc <=  std_logic_vector(signed(ex_mem_npc)+shift_left(signed(ex_mem_imm),1)) when (ex_mem_branch = '1' and not_equal_flag = '1') else -- branch case changed form ex_mem
                 std_logic_vector(signed(ex_mem_npc)+signed(ex_mem_imm)) when (ex_mem_jump = '1') else  -- jump case
-                pc when (stall = '1' or stall_counter > 0) else   -- stall case --NOT SURE
+                pc when (start_stall = '1' or stall_counter > 1) else   -- stall case --NOT SURE
                 NPC; -- note: this happens during IF !!! 1st two during MEM 
                             
     -- MEM/WB pipeline register

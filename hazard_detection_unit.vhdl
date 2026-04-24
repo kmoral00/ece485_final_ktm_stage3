@@ -33,10 +33,10 @@ begin
         if (reset = '1') then
             start_stall <= '0';
         -- stall cases, dependency on a (1)load from memory, (2) load_addr, (3) add, (4) addi/subi
-        elsif ((if_id_rd = rs1 or if_id_rd = rs2) and  (if_id_mem_read = '1' or if_id_load_addr = '1' or id_ex_mem_read = '1')) then -- single stall data dependency case <what control signales and opcodes> (if_id_opcode = "0010111" or if_id_opcode = "0110011" or if_id_opcode = "0010011" or if_id_opcode = "0000011")
+        elsif ((if_id_rd = rs1) and  (if_id_mem_read = '1' or if_id_load_addr = '1' or id_ex_mem_read = '1')) then -- single stall data dependency case <what control signales and opcodes> (if_id_opcode = "0010111" or if_id_opcode = "0110011" or if_id_opcode = "0010011" or if_id_opcode = "0000011")
                 start_stall <= '1';
         elsif -- stall cases for branch or jump, needing time to calulate branch address, etc
-              (opcode = "1100011" or opcode = "1101111") then  --<what control signals and opcodes>
+              (opcode = "1100011" and if_id_opcode = "0010011") then  --<what control signals and opcodes>
                 start_stall <= '1';      
         else        
                 start_stall <= '0';
