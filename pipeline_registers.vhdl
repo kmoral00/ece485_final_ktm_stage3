@@ -20,8 +20,7 @@ entity pipeline_registers is
         instr : in STD_LOGIC_VECTOR (31 downto 0);
         npc : in STD_LOGIC_VECTOR (31 downto 0);
         rd : in STD_LOGIC_VECTOR (4 downto 0);
-        reg1_data : in STD_LOGIC_VECTOR(31 downto 0);
-        reg2_data : in STD_LOGIC_VECTOR(31 downto 0);
+        
         alu_op : in STD_LOGIC_VECTOR (3 downto 0);
         
         -- IF/ID pipeline registers
@@ -36,9 +35,9 @@ entity pipeline_registers is
         -- <add other if_id registers>
         if_id_npc : inout STD_LOGIC_VECTOR(31 downto 0);
         if_id_alu_op : inout STD_LOGIC_VECTOR(3 downto 0);
-        if_id_imm : inout STD_LOGIC_VECTOR(31 downto 0);
-        if_id_reg1_data : inout STD_LOGIC_VECTOR(31 downto 0);
-        if_id_reg2_data : inout STD_LOGIC_VECTOR(31 downto 0);
+        if_id_imm : in STD_LOGIC_VECTOR(31 downto 0);
+        if_id_reg1_data : in STD_LOGIC_VECTOR(31 downto 0);
+        if_id_reg2_data : in STD_LOGIC_VECTOR(31 downto 0);
         if_id_rs1 : inout STD_LOGIC_VECTOR (4 downto 0);
         if_id_rs2 : inout STD_LOGIC_VECTOR(4 downto 0);
         if_id_rd : inout STD_LOGIC_VECTOR(4 downto 0);
@@ -124,8 +123,7 @@ begin
             if_id_alu_op <= (others => '0');
             if_id_rs1 <= (others => '0');
             if_id_rs2 <= (others => '0');
-            if_id_reg1_data <= (others => '0');
-            if_id_reg2_data <= (others => '0');
+
          
             id_ex_reg_write <= '0';
             id_ex_alu_src <= '0';
@@ -185,7 +183,7 @@ begin
             mem_wb_rd <= (others => '0');
             
         elsif rising_edge(clk) then
-            if (start_stall = '1' or stall_counter /= 0) then  -- if stall, then insert a NOP
+            if (start_stall = '1' or stall_counter > 0) then  -- if stall, then insert a NOP
                 if_id_reg_write <= '0';
                 if_id_alu_src <= '0';
                 if_id_mem_read <= '0';
@@ -198,8 +196,7 @@ begin
                 if_id_rs1 <= (others => '0');
                 if_id_rs2 <= (others => '0');
                 if_id_rd <= (others => '0');
-                if_id_reg1_data <= (others => '0');
-                if_id_reg2_data <= (others => '0');
+
 
                 -- <add other registers>    
             
@@ -215,11 +212,9 @@ begin
             if_id_rs1 <= instr(19 downto 15);         --added
             if_id_rs2 <= instr(24 downto 20);         --added 
             if_id_npc <= npc;
-            if_id_rd <= rd;
-            if_id_reg1_data <= reg1_data;
-            if_id_reg2_data <= reg2_data;            
+            if_id_rd <= rd;            
             if_id_alu_op <= alu_op;
-             
+            
         end if;
         -- let instructions prior to stall complete, or move to next state
         id_ex_instr <= if_id_instr;

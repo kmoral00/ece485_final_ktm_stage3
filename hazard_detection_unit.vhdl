@@ -10,7 +10,8 @@ entity hazard_detection_unit is
         instr    : in STD_LOGIC_VECTOR(31 downto 0);        -- current  instr
         if_id_instr    : in STD_LOGIC_VECTOR(31 downto 0);  -- previous instr
         if_id_rd       : in STD_LOGIC_VECTOR(4 downto 0);   -- previous instr destination register
-        rs1      : in STD_LOGIC_VECTOR(4 downto 0);         -- current  instr source register
+        id_ex_mem_read : in STD_LOGIC; --JUST ADDDED FOR LOOP
+        rs1      : in STD_LOGIC_VECTOR(4 downto 0);         -- current  instr source register 
         rs2      : in STD_LOGIC_VECTOR(4 downto 0);         -- current  instr source register
         -- need any other input registers?
         stall_counter  : in integer range 0 to 3 := 0;
@@ -27,12 +28,12 @@ begin
     -- would opcodes of current and previous instructions be useful?
     opcode <= instr(6 downto 0);
     if_id_opcode <= if_id_instr(6 downto 0);
-    process(if_id_mem_read, if_id_rd, rs1, rs2, if_id_opcode, opcode, stall_counter, reset, instr, if_id_instr, if_id_load_addr) -- any others?)
+    process(if_id_mem_read, if_id_rd, rs1, rs2, if_id_opcode, opcode, stall_counter, reset, instr, if_id_instr, if_id_load_addr, id_ex_mem_read) -- any others?)
     begin      
         if (reset = '1') then
             start_stall <= '0';
         -- stall cases, dependency on a (1)load from memory, (2) load_addr, (3) add, (4) addi/subi
-        elsif ((if_id_opcode = "0000011" or if_id_opcode = "0010111" or if_id_opcode = "0110011" or if_id_opcode = "0010011") and (if_id_rd = rs1)) then -- single stall data dependency case <what control signales and opcodes>
+        elsif ((if_id_rd = rs1 or if_id_rd = rs2) and  (if_id_mem_read = '1' or if_id_load_addr = '1' or id_ex_mem_read = '1')) then -- single stall data dependency case <what control signales and opcodes> (if_id_opcode = "0010111" or if_id_opcode = "0110011" or if_id_opcode = "0010011" or if_id_opcode = "0000011")
                 start_stall <= '1';
         elsif -- stall cases for branch or jump, needing time to calulate branch address, etc
               (opcode = "1100011" or opcode = "1101111") then  --<what control signals and opcodes>
